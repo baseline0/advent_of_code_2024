@@ -15,3 +15,7 @@ next
 dec1
 - https://launchschool.com/books/ruby/read/variables 
   
+
+##  odin 
+
+- https://www.theodinproject.com/lessons/ruby-how-this-course-will-work 
