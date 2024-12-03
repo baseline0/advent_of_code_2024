@@ -19,3 +19,16 @@ dec1
 ##  odin 
 
 - https://www.theodinproject.com/lessons/ruby-how-this-course-will-work 
+
+
+## learn ruby 
+
+https://github.com/fpsvogel/learn-ruby 
+
+
+# learn rails
+
+https://guides.rubyonrails.org/active_record_basics.html 
+
+https://rohitrox.github.io/2012/10/30/interacting-to-mysql-with-ruby 
+
