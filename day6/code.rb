@@ -1,7 +1,8 @@
-full_scale = false
+full_scale = true 
 
 if full_scale
-  fname = 'map.txt'
+  fname = 'map.txt' 
+  # 5241  <  too low 
 else
   fname = 'sample_map.txt'
   # 41 
@@ -84,8 +85,9 @@ class GuardMap
     @original_position = position
 
     # the info we want to count
-    @visited = []
-    make_visited_map
+    @visited = @rows.map(&:dup)
+    show_visited
+    # make_visited_map
 
   end
 
@@ -97,21 +99,21 @@ class GuardMap
     show_map(visited=true)
   end 
 
-  def make_visited_map
-    # @visited = []
+  # def make_visited_map
+  #   # @visited = []
 
-    for i in 0...@num_rows-1
-      @visited[i] = []
+  #   for i in 0...@num_rows-1
+  #     @visited[i] = []
 
-      for j in 0...@num_cols-1
-        @visited[i][j] = '.'
-      end
+  #     for j in 0...@num_cols-1
+  #       @visited[i][j] = '.'
+  #     end
 
-    end
+  #   end
 
-    puts "VISITED init"
-    show_visited 
-  end 
+  #   puts "VISITED init"
+  #   show_visited 
+  # end 
 
   def clear_start_position(x,y, direction)
     if @rows[x][y] == direction
