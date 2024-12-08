@@ -46,6 +46,22 @@ class Position
     puts "(x=#{@x}, y=#{@y}) with direction: #{@direction}"
   end 
 
+  def turn_clockwise
+
+    case direction
+    when UP
+      direction = RIGHT
+    when RIGHT
+      direction = DOWN
+    when DOWN
+      direction = LEFT
+    when LEFT
+      direction = UP
+    else
+      puts "bad direction: #{direction}"
+    end 
+  end 
+
 end 
 
 
@@ -67,7 +83,8 @@ class GuardMap
     @original_position = position
 
     # the info we want to count
-    @visited = make_visited_map
+    @visited = []
+    make_visited_map
 
   end
 
@@ -80,18 +97,20 @@ class GuardMap
   end 
 
   def make_visited_map
-    visited = []
+    @visited = []
 
     for i in 0...@num_rows-1
-      visited[i] = []
+      puts i 
+      @visited[i] = []
 
       for j in 0...@num_cols-1
-        visited[i][j] = '.'
+        @visited[i][j] = '.'
       end
 
     end
 
-    visited 
+    puts "VISITED init"
+    show_visited 
   end 
 
   def clear_start_position(x,y, direction)
@@ -154,24 +173,6 @@ class GuardMap
     return x,y
   end
 
-  def turn_clockwise
-
-    current_direction = @position.direction
-
-    case current_direction
-    when UP
-      @position.direction = RIGHT
-    when RIGHT
-      @position.direction = DOWN
-    when DOWN
-      @position.direction = LEFT
-    when LEFT
-      @position.direction = UP
-    else
-      puts "bad direction: #{current_direction}"
-    end 
-  end 
-
   def step
     """
     If there is something directly in front of you, 
@@ -188,15 +189,27 @@ class GuardMap
     # travel as far as possible 
     # in this direction 
     x,y = get_next_position(end_position)
-    while !is_obstacle?(x,y)
+
+    stepping = true 
+    while stepping 
+      
+      if is_obstacle?(x,y)
+        stepping = false 
+      end 
+
       end_position.set({x:x,y:y})
       set_visited(x,y)
       x,y = get_next_position(end_position)
+      
       if !position_is_in_map?(x,y)
-        return end_position, true
+        exited_map = true
+        stepping = false 
       end 
     end 
      
+    # rotate
+    end_position.turn_clockwise
+
     return end_position, exited_map
 
     # puts "position is still in map: #{position_is_in_map?}"
@@ -274,6 +287,7 @@ guard_map = GuardMap.new(rows, start_position)
 # loop 
 running = true 
 while running 
+  
   end_position, exited_map = guard_map.step 
 
   if exited_map
@@ -284,6 +298,12 @@ while running
     puts 'back at original start point'
     running = false
   end 
+
+  guard_map.position.set(
+    {x:end_position.x, 
+    y:end_position.y, 
+    direction:end_position.direction})
+
 end 
 
 # part 1
