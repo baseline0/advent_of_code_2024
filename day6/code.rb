@@ -6,6 +6,7 @@ else
   fname = 'sample_map.txt'
 end
 
+# ========================== 
 
 # facing which way
 UP = "^"
@@ -28,6 +29,12 @@ class Position
     Position.new(@x, @y, @direction)
   end 
 
+  def ==(other)
+    self.class == other.class &&
+      @x == other.x &&
+      @y == other.y &&
+      @direction == other.direction 
+  end 
 
   def set(options = {})
     @x = options[:x] || @x 
@@ -43,6 +50,9 @@ end
 
 
 class GuardMap
+
+  attr_accessor :rows, :position, :original_position
+
   def initialize(rows, position)
     @rows = rows 
     @position = position
@@ -53,9 +63,21 @@ class GuardMap
     # clear the symbol at start position
     clear_start_position(position.x, position.y, position.direction)
 
+    # part of stopping criteria
+    @original_position = position
+
+    # the info we want to count
     @visited = make_visited_map
 
   end
+
+  def show
+    show_map(visited=false)
+  end 
+
+  def show_visited
+    show_map(visited=true)
+  end 
 
   def make_visited_map
     visited = []
@@ -132,23 +154,6 @@ class GuardMap
     return x,y
   end
 
-  def travel_as_far_as_possible 
-    exited_map = false
-    end_position = @position.clone
- 
-    x,y = get_next_position(end_position)
-    while !is_obstacle?(x,y)
-      end_position.set({x:x,y:y})
-      set_visited(x,y)
-      x,y = get_next_position(end_position)
-      if !position_is_in_map?(x,y)
-        return end_position, true
-      end 
-    end 
-     
-    return end_position, exited_map
-  end
-
   def turn_clockwise
 
     current_direction = @position.direction
@@ -177,56 +182,116 @@ class GuardMap
     puts 'step'
     @position.show 
 
-    travel_as_far_as_possible
+    exited_map = false
+    end_position = @position.clone
+ 
+    # travel as far as possible 
+    # in this direction 
+    x,y = get_next_position(end_position)
+    while !is_obstacle?(x,y)
+      end_position.set({x:x,y:y})
+      set_visited(x,y)
+      x,y = get_next_position(end_position)
+      if !position_is_in_map?(x,y)
+        return end_position, true
+      end 
+    end 
+     
+    return end_position, exited_map
 
     # puts "position is still in map: #{position_is_in_map?}"
 
   end 
+
+  private
+
+  def show_map(show_visited=false)
+
+    if show_visited
+      mymap = @visited
+      puts 'visited map'
+    else
+      mymap = @rows
+      puts 'guard map'
+    end
+
+    mymap.each do |row|
+      puts row.join("")
+    end 
+  end
+
 end
 
 # ========================== 
+# init 
 
-rows = []
-start_position = Position.new()
+def load_map_from_file(fname)
 
-File.foreach(fname).with_index do |line, index|
+  rows = []
+  start_position = Position.new()
 
-  puts line 
-  rows << line.chars
-  direction = nil 
+  File.foreach(fname).with_index do |line, index|
 
-  if line.include?(UP)
-    direction = UP 
-    col_idx = line.index(UP)
-  elsif line.include?(DOWN)   
-    direction = DOWN 
-    col_idx = line.index(DOWN)
-  elsif line.include?(RIGHT)   
-    direction = RIGHT 
-    col_idx = line.index(RIGHT)
-  elsif line.include?(LEFT)   
-    direction = LEFT 
-    col_idx = line.index(LEFT)
-  end 
+    puts line 
+    rows << line.chars
+    direction = nil 
 
-  if !direction.nil?
-    start_position.x = index
-    start_position.y = col_idx
-    start_position.direction = direction 
-    puts "start position is: "
-    puts start_position.show
-  end 
+    if line.include?(UP)
+      direction = UP 
+      col_idx = line.index(UP)
+    elsif line.include?(DOWN)   
+      direction = DOWN 
+      col_idx = line.index(DOWN)
+    elsif line.include?(RIGHT)   
+      direction = RIGHT 
+      col_idx = line.index(RIGHT)
+    elsif line.include?(LEFT)   
+      direction = LEFT 
+      col_idx = line.index(LEFT)
+    end 
 
+    if !direction.nil?
+      start_position.x = index
+      start_position.y = col_idx
+      start_position.direction = direction 
+      puts "start position is: "
+      puts start_position.show
+    end 
+
+  end
+  
+  return rows, start_position
 end 
+
+
+# ========================== 
+# run 
+
+rows, start_position = load_map_from_file(fname)
 
 guard_map = GuardMap.new(rows, start_position)
 
-guard_map.step 
+# loop 
+running = true 
+while running 
+  end_position, exited_map = guard_map.step 
+
+  if exited_map
+    puts 'exited map!'
+    running = false 
+  end
+  if end_position == guard_map.original_position
+    puts 'back at original start point'
+    running = false
+  end 
+end 
 
 # part 1
 # How many distinct positions will the 
 # guard visit before leaving the mapped area?
 
 
+guard_map.show
+guard_map.show_visited
 
 puts 'ans: '
