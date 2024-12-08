@@ -4,6 +4,7 @@ if full_scale
   fname = 'map.txt'
 else
   fname = 'sample_map.txt'
+  # 41 
 end
 
 # ========================== 
@@ -48,17 +49,17 @@ class Position
 
   def turn_clockwise
 
-    case direction
+    case @direction
     when UP
-      direction = RIGHT
+      @direction = RIGHT
     when RIGHT
-      direction = DOWN
+      @direction = DOWN
     when DOWN
-      direction = LEFT
+      @direction = LEFT
     when LEFT
-      direction = UP
+      @direction = UP
     else
-      puts "bad direction: #{direction}"
+      puts "bad direction: #{@direction}"
     end 
   end 
 
@@ -97,10 +98,9 @@ class GuardMap
   end 
 
   def make_visited_map
-    @visited = []
+    # @visited = []
 
     for i in 0...@num_rows-1
-      puts i 
       @visited[i] = []
 
       for j in 0...@num_cols-1
@@ -124,12 +124,21 @@ class GuardMap
   def is_obstacle?(x,y)
     # x -> row
     # y -> col
-
-    @rows[x][y] == '#'
+    if x < @rows.length && y < @rows[x].length
+      @rows[x][y] == '#'
+    else 
+      puts 'obstacle: index out of bounds' 
+    end 
   end 
  
   def set_visited(x,y)
-    @visited[x][y] == 'X'
+    puts "visited #{x},#{y}"
+    if x < @visited.length && y < @visited[x].length
+      @visited[x][y] = 'X'
+      @rows[x][y] = @position.direction
+    else
+      puts 'visited: index out of bounds' 
+    end 
   end
 
   def count_visited
@@ -166,7 +175,7 @@ class GuardMap
       y = position.y 
     when LEFT
       x = position.x 
-      y = position.y -1 
+      y = position.y - 1 
     end
 
     puts "next position is: #{x}, #{y}"
@@ -194,25 +203,27 @@ class GuardMap
     while stepping 
       
       if is_obstacle?(x,y)
+        # cant advance into obstacle
+        # so dont update end_position
         stepping = false 
-      end 
-
-      end_position.set({x:x,y:y})
-      set_visited(x,y)
-      x,y = get_next_position(end_position)
-      
-      if !position_is_in_map?(x,y)
+      elsif !position_is_in_map?(x,y)
         exited_map = true
         stepping = false 
+      else
+        # still in map
+        # not an obstacle.
+        # update end point, advance
+        end_position.set({x:x,y:y})
+        set_visited(x,y)
+        x,y = get_next_position(end_position)
       end 
+      
     end 
      
     # rotate
     end_position.turn_clockwise
 
     return end_position, exited_map
-
-    # puts "position is still in map: #{position_is_in_map?}"
 
   end 
 
@@ -304,14 +315,15 @@ while running
     y:end_position.y, 
     direction:end_position.direction})
 
+  guard_map.show
+  guard_map.show_visited
+    
+
 end 
 
 # part 1
 # How many distinct positions will the 
 # guard visit before leaving the mapped area?
 
-
-guard_map.show
-guard_map.show_visited
-
 puts 'ans: '
+puts guard_map.count_visited
